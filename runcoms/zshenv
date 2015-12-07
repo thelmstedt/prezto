@@ -1,3 +1,4 @@
+# -*- mode: sh -*-
 #
 # Defines environment variables.
 #
@@ -9,3 +10,19 @@
 if [[ ( "$SHLVL" -eq 1 && ! -o LOGIN ) && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprofile"
 fi
+
+[[ -s "${ZDOTDIR:-$HOME}/bin" ]] && PATH=$PATH:${ZDOTDIR:-$HOME}/bin
+[[ -s "${ZDOTDIR:-$HOME}/.local/bin" ]] && PATH=$PATH:${ZDOTDIR:-$HOME}/.local/bin
+
+# Haskell
+[[ -s "${ZDOTDIR:-$HOME}/.cabal/bin" ]] && PATH=${ZDOTDIR:-$HOME}/.cabal/bin:$PATH
+[[ -s "${ZDOTDIR:-$HOME}/.local/bin" ]] && PATH=${ZDOTDIR:-$HOME}/.local/bin:$PATH
+
+[[ -s "/usr/libexec/java_home" ]] && export JAVA_HOME="$(/usr/libexec/java_home)"
+
+export MAVEN_OPTS=" -Xmx1024m -XX:MaxPermSize=256m -Dmaven.artifact.threads=20 -Djava.awt.headless=true"
+
+export GIT_EDITOR="emacsclient -a ''"
+export EDITOR="emacsclient -a ''"
+export ES_HEAP_SIZE='4g'
+
