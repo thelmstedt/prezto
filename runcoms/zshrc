@@ -67,7 +67,7 @@ alias mca="mvnrun clean assembly:assembly"
 alias -g gd='GRADLE_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n $GRADLE_OPTS " '
 alias gb='gradle build'
 alias gcb='gradle clean build'
-alias gas='gradle appStart'
+alias gas='gradle appRun'
 
 # Project aliases
 alias w="cd $HOME/work"
