@@ -36,7 +36,6 @@ alias e="emacsclient -t"
 alias gp="git pull --ff-only"
 
 # Maven
-alias -g nt=" -Dmaven.test.skip=true"
 alias -g md='MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n $MAVEN_OPTS " '
 
 mvnrun () {
@@ -46,37 +45,38 @@ mvnrun () {
   eval time mvn $@
   echo mvn $@
   date
-  echo -ne "\033]0;$PWD\007"
 }
 
-alias m='mvnrun install -DskipTests -P!prod'
-alias mc="mvnrun clean install -DskipTests -P!prod"
-alias mct="mvnrun clean install -P!prod"
-alias mt="mvnrun install -P!prod"
-alias mtr="mvnrun tomcat7:run -P!prod"
-alias mctr="mvnrun clean tomcat7:run -P!prod"
-alias mit="mvnrun integration-test -Pwebtests -P!prod"
-alias mst="mvnrun integration-test -Pselenium,headless -P!prod"
-alias mcd="mvnrun process-resources -Pcreate-db -P!prod"
-alias mpr="mvnrun process-resources"
-alias bdd="mvnrun jasmine:bdd -P!prod"
+alias m='mvnrun install -DskipTests'
+alias mc="mvnrun clean install -DskipTests"
+alias mct="mvnrun clean install"
+alias mt="mvnrun install"
 alias mvd="mvnrun dependency:tree"
-alias mca="mvnrun clean assembly:assembly"
+
 
 # Gradle
-alias -g gd='GRADLE_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n $GRADLE_OPTS " '
-alias gb='gradle build'
-alias gcb='gradle clean build'
-alias gas='gradle appRun'
+alias -g gd='GRADLE_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y $GRADLE_OPTS " '
+alias -g gbd='GRADLE_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005 $GRADLE_OPTS"'
+alias -g tc="-Delasticsearch.testCluster=true"
+alias -g nt="-xcheck -xtest"
+
+gradlerun() {
+    date
+    echo gradle $@
+    eval time gradle $@
+    echo gradle $@
+    date
+}
+
+alias r='gradlerun'
+alias ras='gradle appRun'
 
 # Project aliases
 alias w="cd $HOME/work"
 alias b="cd $HOME/work/fetch"
-alias c="cd $HOME/work/fetch-admin"
-alias gbw='cd $HOME/work/fetch/assets && (grunt build || true) && grunt watch'
+alias c="cd $HOME/work/fetch-admin/ansible"
+alias gbw='cd $HOME/work/fetch/assets && yarn && (grunt build || true) && grunt watch'
 
-alias pj="python -mjson.tool"
-alias pjl="python -mjson.tool | less"
 
 function upto() {
     local EXPRESSION="$1"
