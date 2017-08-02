@@ -82,6 +82,9 @@ function go_temp() {
 }
 alias gt=go_temp
 
+function pi() {
+    ack -i --ignore-dir venv --python "$1.*import|import.*$1"
+}
 
 function upto() {
     local EXPRESSION="$1"
