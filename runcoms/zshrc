@@ -77,6 +77,11 @@ alias b="cd $HOME/work/fetch"
 alias c="cd $HOME/work/fetch-admin/ansible"
 alias gbw='cd $HOME/work/fetch/assets && yarn && (grunt build || true) && grunt watch'
 
+function go_temp() {
+    cd $(mktemp -d)
+}
+alias gt=go_temp
+
 
 function upto() {
     local EXPRESSION="$1"
