@@ -24,6 +24,10 @@ export MAVEN_OPTS=" -Xmx1024m -XX:MaxPermSize=256m -Dmaven.artifact.threads=20 -
 
 export GIT_EDITOR="emacsclient -a ''"
 export EDITOR="emacsclient -a ''"
+
+#ES5
+export ES_JAVA_OPTS='-Xmx2g -Xms2g'
+#ES<5
 export ES_HEAP_SIZE='2g'
 
 source ~/.private_env
