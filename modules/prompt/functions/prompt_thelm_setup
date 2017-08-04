@@ -149,7 +149,7 @@ prompt_powerline_setup() {
   POWERLINE_SEPARATOR=$'\uE0B0'
   POWERLINE_R_SEPARATOR=$'\uE0B2'
 
-  POWERLINE_LEFT_A="%K{green}%F{white} %~ %k%f%F{green}%K{blue}"${POWERLINE_SEPARATOR}
+  POWERLINE_LEFT_A="%K{green}%F{white} %~ "'$python_info[virtualenv]'"%k%f%F{green}%K{blue}"${POWERLINE_SEPARATOR}
   POWERLINE_LEFT_B="%k%f%F{white}%K{blue} "'${vcs_info_msg_0_}'" %k%f%F{blue}%K{black}"${POWERLINE_SEPARATOR}
   POWERLINE_LEFT_C=" %k%f%F{white}%K{black}"'$(git_last_commit_details)'" %k%f%F{black}"${POWERLINE_SEPARATOR}"%f "
 
@@ -161,7 +161,7 @@ prompt_powerline_setup() {
 
 
   #  RPROMPT=${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}"'$(rvm_info_for_prompt)'" "
-  RPROMPT=%{${_lineup}%}${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}"'$python_info[virtualenv]'"%f "%{${_linedown}%}
+  RPROMPT=%{${_lineup}%}${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}"'%n@%m'"%f "%{${_linedown}%}
 }
 
 prompt_powerline_setup "$@"
