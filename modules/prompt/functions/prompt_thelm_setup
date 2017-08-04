@@ -70,6 +70,10 @@ prompt_powerline_precmd() {
   zstyle ':vcs_info:*:prompt:*' formats "${fmt_branch}"
 
   vcs_info 'prompt'
+
+  if (( $+functions[python-info] )); then
+    python-info
+  fi
 }
 
 prompt_powerline_setup() {
@@ -130,6 +134,9 @@ prompt_powerline_setup() {
   zstyle ':vcs_info:*:prompt:*' formats       "${fmt_branch}"
   zstyle ':vcs_info:*:prompt:*' nvcsformats   ""
 
+  # Set python-info parameters.
+  zstyle ':prezto:module:python:info:virtualenv' format '(%v)'
+
   # Setup powerline style colouring
   POWERLINE_COLOR_BG_GRAY=%K{240}
   POWERLINE_COLOR_BG_LIGHT_GRAY=%K{240}
@@ -152,8 +159,9 @@ prompt_powerline_setup() {
 
   PROMPT="${POWERLINE_LEFT_A}${POWERLINE_LEFT_B}${POWERLINE_LEFT_C}${_newline}$ "
 
-#  RPROMPT=${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}"'$(rvm_info_for_prompt)'" "
-  RPROMPT=%{${_lineup}%}${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}""%f "%{${_linedown}%}
+
+  #  RPROMPT=${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}"'$(rvm_info_for_prompt)'" "
+  RPROMPT=%{${_lineup}%}${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}"'$python_info[virtualenv]'"%f "%{${_linedown}%}
 }
 
 prompt_powerline_setup "$@"
