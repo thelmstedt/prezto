@@ -28,7 +28,7 @@ git_last_commit_details() {
       now=$(date +%s)
       seconds_since_last_commit=$((now-lc_time))
       lc_time_since=$(time_since_commit ${seconds_since_last_commit})
-      last_commit=$(git log -1 --pretty=%B | head -n1 | awk 'length > 40{$0=substr($0,0,41)" ..."}1')
+      last_commit=$(git log -1 --pretty=%B | head -n1 | awk 'length > 80{$0=substr($0,0,81)" ..."}1')
       echo "$lc_time_since - $last_commit"
     else
       echo ""
@@ -146,13 +146,14 @@ prompt_powerline_setup() {
   POWERLINE_LEFT_B="%k%f%F{white}%K{blue} "'${vcs_info_msg_0_}'" %k%f%F{blue}%K{black}"${POWERLINE_SEPARATOR}
   POWERLINE_LEFT_C=" %k%f%F{white}%K{black}"'$(git_last_commit_details)'" %k%f%F{black}"${POWERLINE_SEPARATOR}"%f "
 
-  PROMPT="${POWERLINE_LEFT_A}${POWERLINE_LEFT_B}${POWERLINE_LEFT_C}
-$ "
+  local _newline=$'\n'
+  local _lineup=$'\e[1A'
+  local _linedown=$'\e[1B'
 
-  # RPROMPT=$POWERLINE_COLOR_FG_WHITE$POWERLINE_R_SEPARATOR"%f$POWERLINE_COLOR_BG_WHITE $POWERLINE_COLOR_FG_GRAY$powerline_right_b "$POWERLINE_R_SEPARATOR"%f%k$POWERLINE_COLOR_BG_GRAY$POWERLINE_COLOR_FG_WHITE $powerline_right_a %f%k"
-  # RPROMPT=$POWERLINE_COLOR_FG_WHITE$POWERLINE_R_SEPARATOR"%f$POWERLINE_COLOR_BG_WHITE $POWERLINE_COLOR_FG_GRAY"'$powerline_right_b'" "$POWERLINE_R_SEPARATOR"%f%k$POWERLINE_COLOR_BG_GRAY$POWERLINE_COLOR_FG_WHITE "'$powerline_right_a'" %f%k"
+  PROMPT="${POWERLINE_LEFT_A}${POWERLINE_LEFT_B}${POWERLINE_LEFT_C}${_newline}$ "
+
 #  RPROMPT=${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}"'$(rvm_info_for_prompt)'" "
-  RPROMPT=${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}"
+  RPROMPT=%{${_lineup}%}${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}""%f "%{${_linedown}%}
 }
 
 prompt_powerline_setup "$@"
