@@ -28,8 +28,13 @@ git_last_commit_details() {
       now=$(date +%s)
       seconds_since_last_commit=$((now-lc_time))
       lc_time_since=$(time_since_commit ${seconds_since_last_commit})
-      last_commit=$(git log -1 --pretty=%B | head -n1 | awk 'length > 80{$0=substr($0,0,81)" ..."}1')
-      echo "$lc_time_since - $last_commit"
+      _pwd=$(pwd)
+      n_pwd=${#_pwd}
+      n_vcs=${#vcs_info_msg_0_}
+      num=$(($COLUMNS - $n_pwd - $n_vcs - 20 ))
+      num_1=$((num + 1))
+      last_commit=$(git log -1 --pretty=%B | head -n1 | awk "length > $num{\$0=substr(\$0,0,$num_1)\" ...\"}1")
+      echo "| ${_prompt_thelm_colors[1]}$vcs_info_msg_0_%F{white} (${_prompt_thelm_colors[4]}$lc_time_since%F{white} $last_commit)"
     else
       echo ""
     fi
@@ -60,7 +65,7 @@ time_since_commit() {
   fi
 }
 
-prompt_powerline_precmd() {
+prompt_thelm_precmd() {
   # Check for untracked files or updated submodules since vcs_info doesn't.
   if [[ ! -z $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
     fmt_branch="%b%u%c${__PROMPT_SKWP_COLORS[4]}●%f"
@@ -77,11 +82,11 @@ prompt_powerline_precmd() {
   echo
 }
 
-prompt_powerline_preexec() {
+prompt_thelm_preexec() {
   echo
 }
 
-prompt_powerline_setup() {
+prompt_thelm_setup() {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
   prompt_opts=(cr percent subst)
@@ -89,8 +94,8 @@ prompt_powerline_setup() {
   autoload -Uz add-zsh-hook
   autoload -Uz vcs_info
 
-  add-zsh-hook precmd prompt_powerline_precmd
-  add-zsh-hook preexec prompt_powerline_preexec
+  add-zsh-hook precmd prompt_thelm_precmd
+  add-zsh-hook preexec prompt_thelm_preexec
 
   # Use extended color pallete if available.
   if [[ ${TERM} = *256color* || ${TERM} = *rxvt* ]]; then
@@ -101,8 +106,22 @@ prompt_powerline_setup() {
       "%F{161}" # hotpink
       "%F{118}" # limegreen
     )
+     _prompt_thelm_colors=(
+      "%F{81}"  # Turquoise
+      "%F{166}" # Orange
+      "%F{135}" # Purple
+      "%F{161}" # Hotpink
+      "%F{118}" # Limegreen
+    )
   else
     __PROMPT_SKWP_COLORS=(
+      "%F{cyan}"
+      "%F{yellow}"
+      "%F{magenta}"
+      "%F{red}"
+      "%F{green}"
+    )
+     _prompt_thelm_colors=(
       "%F{cyan}"
       "%F{yellow}"
       "%F{magenta}"
@@ -143,34 +162,25 @@ prompt_powerline_setup() {
   # Set python-info parameters.
   zstyle ':prezto:module:python:info:virtualenv' format '(%v)'
 
-  # Setup powerline style colouring
-  POWERLINE_COLOR_BG_GRAY=%K{240}
-  POWERLINE_COLOR_BG_LIGHT_GRAY=%K{240}
-  POWERLINE_COLOR_BG_WHITE=%K{255}
 
-  POWERLINE_COLOR_FG_GRAY=%F{240}
-  POWERLINE_COLOR_FG_LIGHT_GRAY=%F{240}
-  POWERLINE_COLOR_FG_WHITE=%F{255}
+  THELM_SEPARATOR="|"
+  THELM_R_SEPARATOR=""
 
-  POWERLINE_SEPARATOR=$'\uE0B0'
-  POWERLINE_R_SEPARATOR=$'\uE0B2'
-
-  POWERLINE_LEFT_A="%K{green}%F{white} %~ "'$python_info[virtualenv]'"%k%f%F{green}%K{blue}"${POWERLINE_SEPARATOR}
-  POWERLINE_LEFT_B="%k%f%F{white}%K{blue} "'${vcs_info_msg_0_}'" %k%f%F{blue}%K{black}"${POWERLINE_SEPARATOR}
-  POWERLINE_LEFT_C=" %k%f%F{white}%K{black}"'$(git_last_commit_details)'" %k%f%F{black}"${POWERLINE_SEPARATOR}"%f "
+  THELM_LEFT_A="${_prompt_thelm_colors[3]}"'%n%f@${_prompt_thelm_colors[2]}%m %F{white}'${THELM_SEPARATOR}
+  THELM_LEFT_B="${_prompt_thelm_colors[5]} %~ "'$python_info[virtualenv]'"%F{white}"
+  THELM_LEFT_C='$(git_last_commit_details)'
 
   local _newline=$'\n'
   local _lineup=$'\e[1A'
   local _linedown=$'\e[1B'
 
-  PROMPT="${POWERLINE_LEFT_A}${POWERLINE_LEFT_B}${POWERLINE_LEFT_C}${_newline}$ "
+  PROMPT="${THELM_LEFT_A}${THELM_LEFT_B}${THELM_LEFT_C}${_newline}$ "
 
 
-  #  RPROMPT=${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}"'$(rvm_info_for_prompt)'" "
-  RPROMPT=%{${_lineup}%}${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}"'%n@%m'"%f "%{${_linedown}%}
+  RPROMPT=%{${_lineup}%}${THELM_R_SEPARATOR}'xxx'%{${_linedown}%}
 }
 
-prompt_powerline_setup "$@"
+prompt_thelm_setup "$@"
 
 
 
