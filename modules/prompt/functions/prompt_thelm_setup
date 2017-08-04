@@ -15,7 +15,7 @@ ZSH_THEME_REP_TIME_SINCE_COMMIT_LONG="%{$fg[red]%}"
 ZSH_THEME_REP_TIME_SINCE_COMMIT_NEUTRAL="%{$fg[cyan]%}"
 
 # returns the time since last git commit
-git_time_details()() {
+git_last_commit_details() {
   # only proceed if there is actually a git repository
   if $(git rev-parse --git-dir > /dev/null 2>&1); then
     # only proceed if there is actually a commit
@@ -27,9 +27,9 @@ git_time_details()() {
 
       now=$(date +%s)
       seconds_since_last_commit=$((now-lc_time))
-      lc_time_since=$(time_since_commit $seconds_since_last_commit)
-
-      echo "$lc_time_since"
+      lc_time_since=$(time_since_commit ${seconds_since_last_commit})
+      last_commit=$(git log -1 --pretty=%B | head -n1 | awk 'length > 40{$0=substr($0,0,41)" ..."}1')
+      echo "$lc_time_since - $last_commit"
     else
       echo ""
     fi
@@ -39,7 +39,7 @@ git_time_details()() {
 }
 
 # returns the time by given seconds
-time_since_commit()() {
+time_since_commit() {
   seconds_since_last_commit=$(($1 + 0))
 
   # totals
@@ -60,17 +60,6 @@ time_since_commit()() {
   fi
 }
 
-rvm_info_for_prompt() {
-  if [[ -d ~/.rvm/ ]]; then
-    local ruby_version=$(~/.rvm/bin/rvm-prompt)
-    if [ -n "$ruby_version" ]; then
-      echo "$ruby_version"
-    fi
-  else
-    echo ""
-  fi
-}
-
 prompt_powerline_precmd() {
   # Check for untracked files or updated submodules since vcs_info doesn't.
   if [[ ! -z $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
@@ -81,9 +70,6 @@ prompt_powerline_precmd() {
   zstyle ':vcs_info:*:prompt:*' formats "${fmt_branch}"
 
   vcs_info 'prompt'
-  RVM_PRECMD_INFO=$(rvm_info_for_prompt)
-
-  # zstyle ':prezto:module:ruby' rvm '%r'
 }
 
 prompt_powerline_setup() {
@@ -97,7 +83,7 @@ prompt_powerline_setup() {
   add-zsh-hook precmd prompt_powerline_precmd
 
   # Use extended color pallete if available.
-  if [[ $TERM = *256color* || $TERM = *rxvt* ]]; then
+  if [[ ${TERM} = *256color* || ${TERM} = *rxvt* ]]; then
     __PROMPT_SKWP_COLORS=(
       "%F{81}"  # turquoise
       "%F{166}" # orange
@@ -144,19 +130,6 @@ prompt_powerline_setup() {
   zstyle ':vcs_info:*:prompt:*' formats       "${fmt_branch}"
   zstyle ':vcs_info:*:prompt:*' nvcsformats   ""
 
-  # SPLIT RVM PROMPT INFO
-  # TODO: should assign this to local variable? somehow doesn't work correctly.
-  rvm_split=("${(s/@/)$(rvm_info_for_prompt)}")
-
-  # if [ "$POWERLINE_RIGHT_B" = "" ]; then
-    # POWERLINE_RIGHT_B=%D{%H:%M:%S}
-    local powerline_right_b=$rvm_split[1]
-  # fi
-
-  # if [ "$POWERLINE_RIGHT_A" = "" ]; then
-    local powerline_right_a=$rvm_split[2]
-  # fi
-
   # Setup powerline style colouring
   POWERLINE_COLOR_BG_GRAY=%K{240}
   POWERLINE_COLOR_BG_LIGHT_GRAY=%K{240}
@@ -169,15 +142,17 @@ prompt_powerline_setup() {
   POWERLINE_SEPARATOR=$'\uE0B0'
   POWERLINE_R_SEPARATOR=$'\uE0B2'
 
-  POWERLINE_LEFT_A="%K{green}%F{white} %~ %k%f%F{green}%K{blue}"$POWERLINE_SEPARATOR
-  POWERLINE_LEFT_B="%k%f%F{white}%K{blue} "'${vcs_info_msg_0_}'" %k%f%F{blue}%K{black}"$POWERLINE_SEPARATOR
-  POWERLINE_LEFT_C=" %k%f%F{white}%K{black}"'$(git_time_details)'" %k%f%F{black}"$POWERLINE_SEPARATOR"%f "
+  POWERLINE_LEFT_A="%K{green}%F{white} %~ %k%f%F{green}%K{blue}"${POWERLINE_SEPARATOR}
+  POWERLINE_LEFT_B="%k%f%F{white}%K{blue} "'${vcs_info_msg_0_}'" %k%f%F{blue}%K{black}"${POWERLINE_SEPARATOR}
+  POWERLINE_LEFT_C=" %k%f%F{white}%K{black}"'$(git_last_commit_details)'" %k%f%F{black}"${POWERLINE_SEPARATOR}"%f "
 
-  PROMPT=$POWERLINE_LEFT_A$POWERLINE_LEFT_B$POWERLINE_LEFT_C
+  PROMPT="${POWERLINE_LEFT_A}${POWERLINE_LEFT_B}${POWERLINE_LEFT_C}
+$ "
 
   # RPROMPT=$POWERLINE_COLOR_FG_WHITE$POWERLINE_R_SEPARATOR"%f$POWERLINE_COLOR_BG_WHITE $POWERLINE_COLOR_FG_GRAY$powerline_right_b "$POWERLINE_R_SEPARATOR"%f%k$POWERLINE_COLOR_BG_GRAY$POWERLINE_COLOR_FG_WHITE $powerline_right_a %f%k"
   # RPROMPT=$POWERLINE_COLOR_FG_WHITE$POWERLINE_R_SEPARATOR"%f$POWERLINE_COLOR_BG_WHITE $POWERLINE_COLOR_FG_GRAY"'$powerline_right_b'" "$POWERLINE_R_SEPARATOR"%f%k$POWERLINE_COLOR_BG_GRAY$POWERLINE_COLOR_FG_WHITE "'$powerline_right_a'" %f%k"
-  RPROMPT=$POWERLINE_COLOR_FG_WHITE$POWERLINE_R_SEPARATOR"%f$POWERLINE_COLOR_BG_WHITE $POWERLINE_COLOR_FG_GRAY"'$(rvm_info_for_prompt)'" "
+#  RPROMPT=${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}"'$(rvm_info_for_prompt)'" "
+  RPROMPT=${POWERLINE_COLOR_FG_WHITE}${POWERLINE_R_SEPARATOR}"%f${POWERLINE_COLOR_BG_WHITE} ${POWERLINE_COLOR_FG_GRAY}"
 }
 
 prompt_powerline_setup "$@"
