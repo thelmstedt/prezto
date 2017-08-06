@@ -29,9 +29,8 @@ git_last_commit_details() {
       seconds_since_last_commit=$((now-lc_time))
       lc_time_since=$(time_since_commit ${seconds_since_last_commit})
       _pwd=$(pwd)
-      n_pwd=${#_pwd}
-      n_vcs=${#vcs_info_msg_0_}
-      num=$(($COLUMNS - $n_pwd - $n_vcs - 20 ))
+      _date=$(date +'%a %d %H:%M %Z')
+      num=$(($COLUMNS - ${#vcs_info_msg_0_} - ${#_pwd} - ${#_date}  ))
       num_1=$((num + 1))
       last_commit=$(git log -1 --pretty=%B | head -n1 | awk "length > $num{\$0=substr(\$0,0,$num_1)\" ...\"}1")
       echo "| ${_prompt_thelm_colors[1]}$vcs_info_msg_0_%F{white} (${_prompt_thelm_colors[4]}$lc_time_since%F{white} $last_commit)"
@@ -177,7 +176,7 @@ prompt_thelm_setup() {
   PROMPT="${THELM_LEFT_A}${THELM_LEFT_B}${THELM_LEFT_C}${_newline}$ "
 
 
-  RPROMPT=%{${_lineup}%}${THELM_R_SEPARATOR}'xxx'%{${_linedown}%}
+  RPROMPT=%{${_lineup}%}${THELM_R_SEPARATOR}`date +'%a %d %H:%M %Z'`%{${_linedown}%}
 }
 
 prompt_thelm_setup "$@"
