@@ -38,7 +38,6 @@ zstyle ':prezto:load' pmodule \
   'pacman' \
   'syntax-highlighting' \
   'prompt' \
-  'python' \
   'ssh'
 
 
