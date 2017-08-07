@@ -21,7 +21,6 @@ fi
 # Python
 [[ -s "${ZDOTDIR:-$HOME}/.pythonrc.py" ]] && export PYTHONSTARTUP="${ZDOTDIR:-$HOME}/.pythonrc.py"
 
-
 unsetopt correct
 
 # History
@@ -41,45 +40,26 @@ alias gp="git pull --ff-only"
 
 # Maven
 alias -g md='MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n $MAVEN_OPTS " '
-
-mvnrun () {
-  date
-  echo mvn $@
-  echo -ne "\e]1;mvn $@\a"
-  eval time mvn $@
-  echo mvn $@
-  date
-}
-
-alias m='mvnrun install -DskipTests'
-alias mc="mvnrun clean install -DskipTests"
-alias mct="mvnrun clean install"
-alias mt="mvnrun install"
-alias mvd="mvnrun dependency:tree"
-
+alias m='mvn install -DskipTests'
+alias mc="mvn clean install -DskipTests"
+alias mct="mvn clean install"
+alias mt="mvn install"
+alias mvd="mvn dependency:tree"
 
 # Gradle
 alias -g gd='GRADLE_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y $GRADLE_OPTS " '
 alias -g gbd='GRADLE_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005 $GRADLE_OPTS"'
 alias -g tc="-Delasticsearch.testCluster=true"
 alias -g nt="-xcheck -xtest"
-
-gradlerun() {
-    date
-    echo gradle $@
-    eval time gradle $@
-    echo gradle $@
-    date
-}
-
-alias r='gradlerun'
+alias r='gradle'
 alias ras='gradle appRun'
+alias rbr='gradle bootRun'
 
 # Project aliases
 alias w="cd $HOME/work"
 alias b="cd $HOME/work/fetch"
 alias c="cd $HOME/work/fetch-admin/ansible"
-alias gbw='cd $HOME/work/fetch/assets && yarn && (grunt build || true) && grunt watch'
+alias gbw='(grunt build || true) && grunt watch'
 
 function go_temp() {
     cd $(mktemp -d)
