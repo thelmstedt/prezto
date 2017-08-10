@@ -17,17 +17,20 @@ fi
 # Haskell
 [[ -s "${ZDOTDIR:-$HOME}/.cabal/bin" ]] && PATH=${ZDOTDIR:-$HOME}/.cabal/bin:$PATH
 [[ -s "${ZDOTDIR:-$HOME}/.local/bin" ]] && PATH=${ZDOTDIR:-$HOME}/.local/bin:$PATH
+# Python
+[[ -s "${ZDOTDIR:-$HOME}/.pythonrc.py" ]] && export PYTHONSTARTUP="${ZDOTDIR:-$HOME}/.pythonrc.py"
 
+#Java
 [[ -s "/usr/libexec/java_home" ]] && export JAVA_HOME="$(/usr/libexec/java_home)"
-
 export MAVEN_OPTS=" -Xmx1024m -XX:MaxPermSize=256m -Dmaven.artifact.threads=20 -Djava.awt.headless=true"
+export ES_JAVA_OPTS='-Xmx2g -Xms2g' #ES5
+export ES_HEAP_SIZE='2g' #ES<5
 
+#Editors
 export GIT_EDITOR="emacsclient -a ''"
 export EDITOR="emacsclient -a ''"
 
-#ES5
-export ES_JAVA_OPTS='-Xmx2g -Xms2g'
-#ES<5
-export ES_HEAP_SIZE='2g'
-
-source ~/.private_env
+# Machine Specific
+[[ -s "${ZDOTDIR:-$HOME}/.machineconf" ]] && source "${ZDOTDIR:-$HOME}/.machineconf"
+[[ -s "${ZDOTDIR:-$HOME}/.private" ]] && source "${ZDOTDIR:-$HOME}/.private"
+[[ -s "${ZDOTDIR:-$HOME}/.private_env" ]] && source "${ZDOTDIR:-$HOME}/.private_env"
