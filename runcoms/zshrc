@@ -14,13 +14,6 @@ fi
 # Customize to your needs...
 # remember - paths live in .zshenv
 
-# Machine Specific
-[[ -s "${ZDOTDIR:-$HOME}/.machineconf" ]] && source "${ZDOTDIR:-$HOME}/.machineconf"
-# Private
-[[ -s "${ZDOTDIR:-$HOME}/.private" ]] && source "${ZDOTDIR:-$HOME}/.private"
-# Python
-[[ -s "${ZDOTDIR:-$HOME}/.pythonrc.py" ]] && export PYTHONSTARTUP="${ZDOTDIR:-$HOME}/.pythonrc.py"
-
 unsetopt correct
 
 # History
