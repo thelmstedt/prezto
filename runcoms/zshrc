@@ -74,15 +74,18 @@ function upto() {
 	  local MATCHING=true
 
 	  while [ "$MATCHING" = true ]; do
-		    if [[ "$CURRENT_FOLDER" =~ "$EXPRESSION" ]]; then
+	      IGNORE_HOME=$(echo "$CURRENT_FOLDER" | sed "s|$HOME||") # we never want to go back to home
+	      if [[ "$CURRENT_FOLDER" == "$HOME" ]] ; then # stop at home
+	          MATCHING=false
+		    elif [[ "$IGNORE_HOME" =~ "$EXPRESSION" ]] ; then
 			      MATCHED_DIR="$CURRENT_FOLDER"
-			      CURRENT_FOLDER="$(dirname $CURRENT_FOLDER)"
+			      CURRENT_FOLDER="$(dirname ${CURRENT_FOLDER})"
 		    else
 			      MATCHING=false
 		    fi
 	  done
 	  if [ -n "$MATCHED_DIR" ]; then
-		    cd $MATCHED_DIR
+		    cd ${MATCHED_DIR}
 	  else
 		    echo "No Match." >&2
 		    return 1
