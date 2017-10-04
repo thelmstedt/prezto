@@ -174,9 +174,7 @@ prompt_thelm_setup() {
   local _linedown=$'\e[1B'
 
   PROMPT="${THELM_LEFT_A}${THELM_LEFT_B}${THELM_LEFT_C}${_newline}$ "
-
-
-  RPROMPT=%{${_lineup}%}${THELM_R_SEPARATOR}`date +'%a %d %H:%M %Z'`%{${_linedown}%}
+  RPROMPT=%{${_lineup}%}${THELM_R_SEPARATOR}%w" "%D{%H:%M:%S}%{${_linedown}%}
 }
 
 prompt_thelm_setup "$@"
