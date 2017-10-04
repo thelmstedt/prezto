@@ -24,7 +24,6 @@ fi
 [[ -s "/usr/libexec/java_home" ]] && export JAVA_HOME="$(/usr/libexec/java_home)"
 export MAVEN_OPTS=" -Xmx1024m -XX:MaxPermSize=256m -Dmaven.artifact.threads=20 -Djava.awt.headless=true"
 export ES_JAVA_OPTS='-Xmx2g -Xms2g' #ES5
-export ES_HEAP_SIZE='2g' #ES<5
 
 export USER_HOME="${ZDOTDIR:-$HOME}"
 export GRADLE_USER_HOME="${ZDOTDIR:-$HOME}/.gradle"
