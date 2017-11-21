@@ -71,18 +71,22 @@ prompt_thelm_precmd() {
   else
     fmt_branch="%b%u%c"
   fi
-  zstyle ':vcs_info:*:prompt:*' formats "${fmt_branch}"
+  zstyle ':vcs_info:*' formats "${fmt_branch}"
 
-  vcs_info 'prompt'
+  vcs_info
 
-  if (( $+functions[python-info] )); then
-    python-info
-  fi
-  echo
+  THELM_SEPARATOR="|"
+  THELM_LEFT_A="${_prompt_thelm_colors[3]}"'%n%f@${_prompt_thelm_colors[2]}%m %F{white}'${THELM_SEPARATOR}
+  THELM_LEFT_B="${_prompt_thelm_colors[5]} %~ %F{white}"
+  THELM_LEFT_C='$(git_last_commit_details)'
+
+  print # blank line before prompt (or after a command finishes)
+  print -rP "${THELM_LEFT_A}${THELM_LEFT_B}${THELM_LEFT_C}"
 }
 
 prompt_thelm_preexec() {
-  echo
+  # blank line before executing a command
+  print
 }
 
 prompt_thelm_setup() {
@@ -161,20 +165,12 @@ prompt_thelm_setup() {
   # Set python-info parameters.
   zstyle ':prezto:module:python:info:virtualenv' format '(%v)'
 
-
-  THELM_SEPARATOR="|"
-  THELM_R_SEPARATOR=""
-
-  THELM_LEFT_A="${_prompt_thelm_colors[3]}"'%n%f@${_prompt_thelm_colors[2]}%m %F{white}'${THELM_SEPARATOR}
-  THELM_LEFT_B="${_prompt_thelm_colors[5]} %~ "'$python_info[virtualenv]'"%F{white}"
-  THELM_LEFT_C='$(git_last_commit_details)'
-
   local _newline=$'\n'
   local _lineup=$'\e[1A'
   local _linedown=$'\e[1B'
 
-  PROMPT="${THELM_LEFT_A}${THELM_LEFT_B}${THELM_LEFT_C}${_newline}$ "
-  RPROMPT=%{${_lineup}%}${THELM_R_SEPARATOR}%w" "%D{%H:%M:%S}%{${_linedown}%}
+  PROMPT="$ "
+  RPROMPT=%{${_lineup}%}%w" "%D{%H:%M:%S}%{${_linedown}%}
 }
 
 prompt_thelm_setup "$@"
