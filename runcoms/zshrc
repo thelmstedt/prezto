@@ -31,6 +31,10 @@ alias gs="git status --short"
 alias e="emacsclient -t"
 alias gp="git pull --ff-only"
 
+function git_no_matching_remotes() {
+    for x in $(git branch); git show-branch remotes/origin/${x} &> /dev/null || echo ${x}
+}
+
 # Maven
 alias -g md='MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n $MAVEN_OPTS " '
 alias m='mvn install -DskipTests'
