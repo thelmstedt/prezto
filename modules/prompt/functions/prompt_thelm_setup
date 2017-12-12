@@ -1,59 +1,53 @@
+#@IgnoreInspection BashAddShebang
 #
-# A ZSH theme based on a combination of the skwp prezto theme and the robl ohmyzsh theme.
-#  * RVM info shown on the right
-#  * Git branch info on the left
-#  * Single line prompt
-#  * Time since last commit on the left
-#  * Time in place of user@hostname
-#
-# Authors:
-#   David Rice <me@davidjrice.co.uk>
+# A ZSH theme displaying lots of git specific info
 
-ZSH_THEME_REP_TIME_SINCE_COMMIT_SHORT="%{$fg[green]%}"
-ZSH_THEME_REP_TIME_SINCE_COMMIT_MEDIUM="%{$fg[yellow]%}"
-ZSH_THEME_REP_TIME_SINCE_COMMIT_LONG="%{$fg[red]%}"
-ZSH_THEME_REP_TIME_SINCE_COMMIT_NEUTRAL="%{$fg[cyan]%}"
+_prompt_thelm_separator="%F{white}|"
+
+# Use extended color pallete if available.
+if [[ ${TERM} = *256color* || ${TERM} = *rxvt* ]]; then
+   _prompt_thelm_colors=(
+    "%F{81}"  # Turquoise
+    "%F{166}" # Orange
+    "%F{135}" # Purple
+    "%F{161}" # Hotpink
+    "%F{118}" # Limegreen
+  )
+else
+   _prompt_thelm_colors=(
+    "%F{cyan}"
+    "%F{yellow}"
+    "%F{magenta}"
+    "%F{red}"
+    "%F{green}"
+  )
+fi
 
 # returns the time since last git commit
-git_last_commit_details() {
-  # only proceed if there is actually a git repository
+vcs_info_wrapper() {
   if $(git rev-parse --git-dir > /dev/null 2>&1); then
-    # only proceed if there is actually a commit
     if [[ $(git log 2>&1 > /dev/null | grep -c "^fatal: bad default revision") == 0 ]]; then
-      # get the last commit hash
-      # lc_hash=$(git log --pretty=format:'%h' -1 2> /dev/null)
-      # get the last commit time
-      lc_time=$(git log --pretty=format:'%at' -1 2> /dev/null)
-
-      now=$(date +%s)
-      seconds_since_last_commit=$((now-lc_time))
-      lc_time_since=$(time_since_commit ${seconds_since_last_commit})
-      _pwd=$(pwd)
-      _date=$(date +'%a %d %H:%M %Z')
-      num=$(($COLUMNS - ${#vcs_info_msg_0_} - ${#_pwd} - ${#_date}  ))
-      num_1=$((num + 1))
-      last_commit=$(git log -1 --pretty=%B | head -n1 | awk "length > $num{\$0=substr(\$0,0,$num_1)\" ...\"}1")
-      echo "| ${_prompt_thelm_colors[1]}$vcs_info_msg_0_%F{white} (${_prompt_thelm_colors[4]}$lc_time_since%F{white} $last_commit)"
+      print "${_prompt_thelm_separator} ${vcs_info_msg_0_}"
     else
-      echo ""
+      print ""
     fi
   else
-    echo ""
+    print ""
   fi
 }
 
 # returns the time by given seconds
 time_since_commit() {
-  seconds_since_last_commit=$(($1 + 0))
+  local seconds_since_last_commit=$(($1 + 0))
 
   # totals
-  MINUTES=$((seconds_since_last_commit / 60))
-  HOURS=$((seconds_since_last_commit/3600))
+  local MINUTES=$((seconds_since_last_commit / 60))
+  local HOURS=$((seconds_since_last_commit/3600))
 
   # sub-hours and sub-minutes
-  DAYS=$((seconds_since_last_commit / 86400))
-  SUB_HOURS=$((HOURS % 24))
-  SUB_MINUTES=$((MINUTES % 60))
+  local DAYS=$((seconds_since_last_commit / 86400))
+  local SUB_HOURS=$((HOURS % 24))
+  local SUB_MINUTES=$((MINUTES % 60))
 
   if [ "$HOURS" -gt 24 ]; then
     echo "${DAYS}d${SUB_HOURS}h${SUB_MINUTES}m"
@@ -64,30 +58,75 @@ time_since_commit() {
   fi
 }
 
+### git: Show marker (T) if there are untracked files in repository
+# Make sure you have added staged to your 'formats':  %c
+function +vi-git-untracked(){
+    if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && \
+        git status --porcelain | fgrep '??' &> /dev/null ; then
+        # This will show the marker if there are any untracked files in repo.
+        # If instead you want to show the marker only if there are untracked
+        # files in $PWD, use:
+        #[[ -n $(git ls-files --others --exclude-standard) ]] ; then
+        hook_com[unstaged]+="%B%F{magenta}?%f%b"
+    fi
+}
+
+### git: Show +N/-N when your local branch is ahead-of or behind remote HEAD.
+# Make sure you have added misc to your 'formats':  %m
+function +vi-git-aheadbehind() {
+    local ahead behind
+    local -a gitstatus
+
+    # for git prior to 1.7
+    # ahead=$(git rev-list origin/${hook_com[branch]}..HEAD | wc -l)
+    ahead=$(git rev-list ${hook_com[branch]}@{upstream}..HEAD 2>/dev/null | wc -l | tr -d ' ')
+    (( $ahead )) && gitstatus+=( "%B%F{green}+${ahead}%f%b" )
+
+    # for git prior to 1.7
+    # behind=$(git rev-list HEAD..origin/${hook_com[branch]} | wc -l)
+    behind=$(git rev-list HEAD..${hook_com[branch]}@{upstream} 2>/dev/null | wc -l | tr -d ' ')
+    (( $behind )) && gitstatus+=( "%B%F{red}-${behind}%f%b" )
+
+
+    # get the last commit hash
+    # lc_hash=$(git log --pretty=format:'%h' -1 2> /dev/null)
+    # get the last commit time
+    local lc_time=$(git log --pretty=format:'%at' -1 2> /dev/null)
+    local now=$(date +%s)
+    local seconds_since_last_commit=$((now-lc_time))
+    local lc_time_since=$(time_since_commit ${seconds_since_last_commit})
+    local last_commit=$(git log -1 --pretty=%B | head -n1)
+
+    hook_com[misc]+=${(j::)gitstatus}
+    hook_com[misc]+=" ${_prompt_thelm_colors[4]}$lc_time_since%F{white} $last_commit"
+}
+
+### git: Show remote branch name for remote-tracking branches
+# Make sure you have added staged to your 'formats':  %b
+function +vi-git-remotebranch() {
+    local remote
+
+    # Are we on a remote-tracking branch?
+    remote=${$(git rev-parse --verify ${hook_com[branch]}@{upstream} \
+        --symbolic-full-name 2>/dev/null)/refs\/remotes\/}
+
+    # The first test will show a tracking branch whenever there is one. The
+    # second test, however, will only show the remote branch's name if it
+    # differs from the local one.
+    #if [[ -n ${remote} ]] ; then
+    if [[ -n ${remote} && ${remote#*/} != ${hook_com[branch]} ]] ; then
+        hook_com[branch]="${hook_com[branch]}(%F{cyan}${remote}%f)"
+    fi
+}
+
 prompt_thelm_precmd() {
-  # Check for untracked files or updated submodules since vcs_info doesn't.
-  if [[ ! -z $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
-    fmt_branch="%b%u%c${__PROMPT_SKWP_COLORS[4]}●%f"
-  else
-    fmt_branch="%b%u%c"
-  fi
-  zstyle ':vcs_info:*' formats "${fmt_branch}"
-
-  vcs_info
-
-  THELM_SEPARATOR="|"
-  THELM_LEFT_A="${_prompt_thelm_colors[3]}"'%n%f@${_prompt_thelm_colors[2]}%m %F{white}'${THELM_SEPARATOR}
-  THELM_LEFT_B="${_prompt_thelm_colors[5]} %~ %F{white}"
-  THELM_LEFT_C='$(git_last_commit_details)'
-
   print # blank line before prompt (or after a command finishes)
-  print -rP "${THELM_LEFT_A}${THELM_LEFT_B}${THELM_LEFT_C}"
 }
 
 prompt_thelm_preexec() {
-  # blank line before executing a command
-  print
+  print # blank line before executing a command
 }
+
 
 prompt_thelm_setup() {
   setopt LOCAL_OPTIONS
@@ -100,77 +139,27 @@ prompt_thelm_setup() {
   add-zsh-hook precmd prompt_thelm_precmd
   add-zsh-hook preexec prompt_thelm_preexec
 
-  # Use extended color pallete if available.
-  if [[ ${TERM} = *256color* || ${TERM} = *rxvt* ]]; then
-    __PROMPT_SKWP_COLORS=(
-      "%F{81}"  # turquoise
-      "%F{166}" # orange
-      "%F{135}" # purple
-      "%F{161}" # hotpink
-      "%F{118}" # limegreen
-    )
-     _prompt_thelm_colors=(
-      "%F{81}"  # Turquoise
-      "%F{166}" # Orange
-      "%F{135}" # Purple
-      "%F{161}" # Hotpink
-      "%F{118}" # Limegreen
-    )
-  else
-    __PROMPT_SKWP_COLORS=(
-      "%F{cyan}"
-      "%F{yellow}"
-      "%F{magenta}"
-      "%F{red}"
-      "%F{green}"
-    )
-     _prompt_thelm_colors=(
-      "%F{cyan}"
-      "%F{yellow}"
-      "%F{magenta}"
-      "%F{red}"
-      "%F{green}"
-    )
-  fi
 
-  # Enable VCS systems you use.
-  zstyle ':vcs_info:*' enable bzr git hg svn
-
-  # check-for-changes can be really slow.
-  # You should disable it if you work with large repositories.
-  zstyle ':vcs_info:*:prompt:*' check-for-changes true
-
-  # Formats:
-  # %b - branchname
-  # %u - unstagedstr (see below)
-  # %c - stagedstr (see below)
-  # %a - action (e.g. rebase-i)
-  # %R - repository path
-  # %S - path in the repository
-  # %n - user
-  # %m - machine hostname
-
-  # local fmt_branch="(${__PROMPT_SKWP_COLORS[1]}%b%f%u%c)"
-  local fmt_branch="${__PROMPT_SKWP_COLORS[2]}%b%f%u%c"
-  local fmt_action="${__PROMPT_SKWP_COLORS[5]}%a%f"
-  local fmt_unstaged="${__PROMPT_SKWP_COLORS[2]}●%f"
-  local fmt_staged="${__PROMPT_SKWP_COLORS[5]}●%f"
-
-  zstyle ':vcs_info:*:prompt:*' unstagedstr   "${fmt_unstaged}"
-  zstyle ':vcs_info:*:prompt:*' stagedstr     "${fmt_staged}"
-  zstyle ':vcs_info:*:prompt:*' actionformats "${fmt_branch}${fmt_action}"
-  zstyle ':vcs_info:*:prompt:*' formats       "${fmt_branch}"
-  zstyle ':vcs_info:*:prompt:*' nvcsformats   ""
+  local c_r='%F{white}' #reset color
+  local c_b=${_prompt_thelm_colors[1]} # branch color
+  zstyle ':vcs_info:*' enable git
+  zstyle ':vcs_info:*' check-for-changes true
+  zstyle ':vcs_info:*' stagedstr     "%B%F{green}$%f${c_b}%b${c_r}"
+  zstyle ':vcs_info:*' unstagedstr   "%B%F{yellow}%%%f${c_b}%b${c_r}"
+  zstyle ':vcs_info:*' formats       "%c%u${c_b}%b${c_r}%m "
+  zstyle ':vcs_info:*' actionformats "%c%u%b%m %B%s-%a%${c_b}%b${c_r} "
+  zstyle ':vcs_info:git*+set-message:*' hooks git-untracked git-aheadbehind git-remotebranch
 
   # Set python-info parameters.
   zstyle ':prezto:module:python:info:virtualenv' format '(%v)'
 
-  local _newline=$'\n'
-  local _lineup=$'\e[1A'
-  local _linedown=$'\e[1B'
+  local names="${_prompt_thelm_colors[3]}%n%f@${_prompt_thelm_colors[2]}%m"
+  local datetime="%w %D{%H:%M:%S}"
+  local path="${_prompt_thelm_colors[5]}%~"
+  local git_info='$(vcs_info && vcs_info_wrapper)'
 
-  PROMPT="$ "
-  RPROMPT=%{${_lineup}%}%w" "%D{%H:%M:%S}%{${_linedown}%}
+  PROMPT="${names} ${_prompt_thelm_separator} ${datetime} ${_prompt_thelm_separator} ${path} ${git_info}
+%F{white}$ "
 }
 
 prompt_thelm_setup "$@"
