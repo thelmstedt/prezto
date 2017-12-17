@@ -112,10 +112,12 @@ function +vi-git-remotebranch() {
 }
 
 prompt_thelm_precmd() {
+  print -Pn "\e]0;%m:%~\a"
   print # blank line before prompt (or after a command finishes)
 }
 
 prompt_thelm_preexec() {
+  print -Pn "\e]0;$1\a"
   print # blank line before executing a command
 }
 
