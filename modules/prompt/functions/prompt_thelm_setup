@@ -2,8 +2,6 @@
 #
 # A ZSH theme displaying lots of git specific info
 
-_prompt_thelm_separator="%F{white}|"
-
 # Use extended color pallete if available.
 if [[ ${TERM} = *256color* || ${TERM} = *rxvt* ]]; then
    _prompt_thelm_colors=(
@@ -26,13 +24,7 @@ fi
 # returns the time since last git commit
 vcs_info_wrapper() {
   if $(git rev-parse --git-dir > /dev/null 2>&1); then
-    if [[ $(git log 2>&1 > /dev/null | grep -c "^fatal: bad default revision") == 0 ]]; then
-      print "${_prompt_thelm_separator} ${vcs_info_msg_0_}"
-    else
-      print ""
-    fi
-  else
-    print ""
+    vcs_info && print "${vcs_info_msg_0_}"
   fi
 }
 
@@ -140,14 +132,15 @@ prompt_thelm_setup() {
   add-zsh-hook preexec prompt_thelm_preexec
 
 
-  local c_r='%F{white}' #reset color
-  local c_b=${_prompt_thelm_colors[1]} # branch color
+  local _s="%F{white}|" #separator
+  local _cr='%F{white}' #reset color
+  local _cb=${_prompt_thelm_colors[1]} # branch color
   zstyle ':vcs_info:*' enable git
   zstyle ':vcs_info:*' check-for-changes true
-  zstyle ':vcs_info:*' stagedstr     "%B%F{green}$%f${c_b}%b${c_r}"
-  zstyle ':vcs_info:*' unstagedstr   "%B%F{yellow}%%%f${c_b}%b${c_r}"
-  zstyle ':vcs_info:*' formats       "%c%u${c_b}%b${c_r}%m "
-  zstyle ':vcs_info:*' actionformats "%c%u%b%m %B%s-%a%${c_b}%b${c_r} "
+  zstyle ':vcs_info:*' stagedstr     "%B%F{green}$%f${_cb}%b${_cr}"
+  zstyle ':vcs_info:*' unstagedstr   "%B%F{yellow}%%%f${_cb}%b${_cr}"
+  zstyle ':vcs_info:*' formats       "${_s} %c%u${_cb}%b${_cr}%m "
+  zstyle ':vcs_info:*' actionformats "%c%u%b%m %B%s-%a%${_cb}%b${_cr} "
   zstyle ':vcs_info:git*+set-message:*' hooks git-untracked git-aheadbehind git-remotebranch
 
   # Set python-info parameters.
@@ -156,9 +149,9 @@ prompt_thelm_setup() {
   local names="${_prompt_thelm_colors[3]}%n%f@${_prompt_thelm_colors[2]}%m"
   local datetime="%w %D{%H:%M:%S}"
   local path="${_prompt_thelm_colors[5]}%~"
-  local git_info='$(vcs_info && vcs_info_wrapper)'
+  local git_info='$(vcs_info_wrapper)'
 
-  PROMPT="${names} ${_prompt_thelm_separator} ${datetime} ${_prompt_thelm_separator} ${path} ${git_info}
+  PROMPT="${names} ${_s} ${datetime} ${_s} ${path} ${git_info}
 %F{white}$ "
 }
 
