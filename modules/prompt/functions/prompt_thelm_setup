@@ -1,6 +1,12 @@
 #@IgnoreInspection BashAddShebang
 #
-# A ZSH theme displaying lots of git specific info
+# My ZSH theme
+#
+# Features:
+#  * tracking current paths and commands in terminal title
+#  * cursor on own line (with no RHS) for easy copying
+#  * git info: branch, time since last commit, commit message, tracked/untracked, ahead/behind
+#  * async git info since all of that takes a long time
 
 # Use extended color pallete if available.
 if [[ ${TERM} = *256color* || ${TERM} = *rxvt* ]]; then
@@ -21,12 +27,9 @@ else
   )
 fi
 
-# returns the time since last git commit
-vcs_info_wrapper() {
-  if $(git rev-parse --git-dir > /dev/null 2>&1); then
-    vcs_info && print "${vcs_info_msg_0_}"
-  fi
-}
+_prompt_thelm_git_global=''
+_prompt_thelm_current_git_root=''
+
 
 # returns the time by given seconds
 time_since_commit() {
@@ -111,13 +114,57 @@ function +vi-git-remotebranch() {
     fi
 }
 
+
+function prompt_thelm_async_callback() {
+  case $1 in
+    prompt_thelm_async_git)
+      _prompt_thelm_git_global=$3
+      zle && zle reset-prompt
+      ;;
+  esac
+}
+
+function prompt_thelm_async_git() {
+  cd -q "$1"
+  vcs_info
+  print ${vcs_info_msg_0_}
+}
+
+prompt_thelm_async_setup () {
+  if (( !${prompt_prezto_async_init:-0} )); then
+    async_start_worker prompt_thelm -n
+    async_register_callback prompt_thelm prompt_thelm_async_callback
+    typeset -g prompt_prezto_async_init=1
+  fi
+
+  # Kill the old process of slow commands if it is still running.
+  async_flush_jobs prompt_thelm
+
+  # Compute slow commands in the background.
+  async_job prompt_thelm prompt_thelm_async_git "$PWD"
+}
+
 prompt_thelm_precmd() {
-  print -Pn "\e]0;%m:%~\a"
+  print -Pn "\e]0;%m:%~\a" # current directory in terminal title
   print # blank line before prompt (or after a command finishes)
+
+  #
+  # vcs_info is expensive: here we reset our prompt's git info
+  # on each git root dir change, calculating the git info as an
+  # async_job
+  #
+  if $(git rev-parse --git-dir > /dev/null 2>&1); then
+    local new_git_root=$(git rev-parse --show-toplevel)
+    if [[ ${new_git_root} != $_prompt_thelm_current_git_root ]]; then
+      _prompt_thelm_git_global=''
+      _prompt_thelm_current_git_root=${new_git_root}
+    fi
+  fi
+  prompt_thelm_async_setup
 }
 
 prompt_thelm_preexec() {
-  print -Pn "\e]0;$1\a"
+  print -Pn "\e]0;%m:%~ $ $1\a" # current command in terminal title
   print # blank line before executing a command
 }
 
@@ -129,10 +176,10 @@ prompt_thelm_setup() {
 
   autoload -Uz add-zsh-hook
   autoload -Uz vcs_info
+  autoload -Uz async && async
 
   add-zsh-hook precmd prompt_thelm_precmd
   add-zsh-hook preexec prompt_thelm_preexec
-
 
   local _s="%F{white}|" #separator
   local _cr='%F{white}' #reset color
@@ -151,9 +198,8 @@ prompt_thelm_setup() {
   local names="${_prompt_thelm_colors[3]}%n%f@${_prompt_thelm_colors[2]}%m"
   local datetime="%w %D{%H:%M:%S}"
   local path="${_prompt_thelm_colors[5]}%~"
-  local git_info='$(vcs_info_wrapper)'
 
-  PROMPT="${names} ${_s} ${datetime} ${_s} ${path} ${git_info}
+  PROMPT="${names} ${_s} ${datetime} ${_s} ${path} "'${_prompt_thelm_git_global}'"
 %F{white}$ "
 }
 
