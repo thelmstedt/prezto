@@ -96,3 +96,10 @@ function upto() {
 	  fi
 }
 alias u=upto
+
+function awk_column() {
+  local cmd="{print \$$1}"
+  awk ${cmd}
+}
+
+alias ac=awk_column
