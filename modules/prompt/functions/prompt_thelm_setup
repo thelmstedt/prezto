@@ -28,7 +28,7 @@ else
 fi
 
 _prompt_thelm_git_global=''
-_prompt_thelm_current_git_root=''
+_prompt_thelm_current_git_root_global=''
 
 
 # returns the time by given seconds
@@ -154,13 +154,16 @@ prompt_thelm_precmd() {
   # async_job
   #
   if $(git rev-parse --git-dir > /dev/null 2>&1); then
-    local new_git_root=$(git rev-parse --show-toplevel)
-    if [[ ${new_git_root} != $_prompt_thelm_current_git_root ]]; then
+    local new_git_root="prefix$(git rev-parse --show-toplevel)" #prefix so we don't leak the current dir for aliasing
+    if [[ ${new_git_root} != $_prompt_thelm_current_git_root_global ]]; then
       _prompt_thelm_git_global=''
-      _prompt_thelm_current_git_root=${new_git_root}
+      _prompt_thelm_current_git_root_global=${new_git_root}
     fi
+    prompt_thelm_async_setup
+  else
+    _prompt_thelm_git_global=''
+    _prompt_thelm_current_git_root_global=''
   fi
-  prompt_thelm_async_setup
 }
 
 prompt_thelm_preexec() {
