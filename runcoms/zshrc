@@ -51,6 +51,7 @@ alias -g nt="-xcheck -xtest"
 alias r='gradle'
 alias ras='gradle appRun'
 alias rbr='gradle bootRun'
+alias rbt='gradle bootRun -Delasticsearch.testCluster=true'
 
 # Project aliases
 alias w="cd $HOME/work"
