@@ -5,102 +5,19 @@
 # Authors:
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
 #
+#zmodload zsh/zprof
 
-# Source Prezto.
-if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
-  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
-fi
+fpath=( "$HOME/.zprezto/functions" $fpath )
 
-# Customize to your needs...
-# remember - paths live in .zshenv
-
-unsetopt correct
-
-# History
-bindkey "^[[A" history-search-backward
-bindkey "^[[B" history-search-forward
-export HISTSIZE=100000
-
-# utils
-alias l="exa"
-alias ll="exa -l --git"
-
-# git
-alias g="git"
-alias gs="git status --short"
-alias e="emacsclient -t"
-alias gp="git pull --ff-only"
-
-function git_no_matching_remotes() {
-    for x in $(git branch); git show-branch remotes/origin/${x} &> /dev/null || echo ${x}
+#
+# Functions
+#
+# Checks if a name is a command, function, or alias.
+function is-callable {
+  (( $+commands[$1] || $+functions[$1] || $+aliases[$1] || $+builtins[$1] ))
 }
 
-# Maven
-alias -g md='MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n $MAVEN_OPTS " '
-alias m='mvn install -DskipTests'
-alias mc="mvn clean install -DskipTests"
-alias mct="mvn clean install"
-alias mt="mvn install"
-alias mvd="mvn dependency:tree"
+for config (~/.zprezto/modules/*.zsh) source $config
 
-# Gradle
-alias -g gd='GRADLE_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y $GRADLE_OPTS " '
-alias -g gbd='GRADLE_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005 $GRADLE_OPTS"'
-alias -g tc="-Delasticsearch.testCluster=true"
-alias -g nt="-xcheck -xtest"
-alias r='gradle'
-alias ras='gradle appRun'
-alias rbr='gradle bootRun'
-alias rbt='gradle bootRun -Delasticsearch.testCluster=true'
 
-# Project aliases
-alias w="cd $HOME/work"
-alias b="cd $HOME/work/fetch"
-alias c="cd $HOME/work/fetch-admin/ansible"
-alias gbw='(grunt build || true) && grunt watch'
-
-function go_temp() {
-    cd $(mktemp -d)
-}
-alias gt=go_temp
-
-function pi() {
-    ack -i --ignore-dir venv --python "$1.*import|import.*$1"
-}
-
-function upto() {
-    local EXPRESSION="$1"
-	  if [ -z "$EXPRESSION" ]; then
-		    echo "A folder expression must be provided." >&2
-		    return 1
-	  fi
-	  local CURRENT_FOLDER="$(pwd)"
-	  local MATCHED_DIR=""
-	  local MATCHING=true
-
-	  while [ "$MATCHING" = true ]; do
-	      IGNORE_HOME=$(echo "$CURRENT_FOLDER" | sed "s|$HOME||") # we never want to go back to home
-	      if [[ "$CURRENT_FOLDER" == "$HOME" ]] ; then # stop at home
-	          MATCHING=false
-		    elif [[ "$IGNORE_HOME" =~ "$EXPRESSION" ]] ; then
-			      MATCHED_DIR="$CURRENT_FOLDER"
-			      CURRENT_FOLDER="$(dirname ${CURRENT_FOLDER})"
-		    else
-			      MATCHING=false
-		    fi
-	  done
-	  if [ -n "$MATCHED_DIR" ]; then
-		    cd ${MATCHED_DIR}
-	  else
-		    echo "No Match." >&2
-		    return 1
-	  fi
-}
-alias u=upto
-
-function awk_column() {
-  local cmd="{print \$$1}"
-  awk ${cmd}
-}
-
-alias ac=awk_column
+#zprof
