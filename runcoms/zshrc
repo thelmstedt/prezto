@@ -55,7 +55,7 @@ alias rbt='gradle bootRun -Delasticsearch.testCluster=true'
 
 # Project aliases
 alias w="cd $HOME/work"
-alias b="cd $HOME/work/fetch"
+alias b="cd $HOME/work/ipa-monorepo"
 alias c="cd $HOME/work/fetch-admin/ansible"
 alias gbw='(grunt build || true) && grunt watch'
 
@@ -100,7 +100,15 @@ alias u=upto
 
 function awk_column() {
   local cmd="{print \$$1}"
-  awk ${cmd}
+  if [ -z "$2" ]
+  then
+    awk ${cmd}
+  else
+    awk -F"$2" ${cmd}
+  fi
+
 }
 
 alias ac=awk_column
+
+alias trim="sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'"
